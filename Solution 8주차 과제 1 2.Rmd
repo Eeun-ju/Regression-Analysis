@@ -1,0 +1,250 @@
+---
+---
+
+## CH4 Regression Diagnostics-1  
+  
+    
+    1. Consider the computer repair problem discussed in Section 2.3. In a second sampling period, 10 more observations on the variable Minutes and Units were obtained. Since all observations were collected by the same method from a fixed environment, all 24 observations were pooled to form one data set. The data appear in Table 4.6.  
+  
+
+#### a) Fit a linear regression model relating Minutes to Units  
+  
+```{r}
+library(broom)
+library(olsrr)
+#install.packages('olsrr')
+#install.packages('broom')
+df = read.table("C:/Users/user/Desktop/ch4_computer.txt",header = TRUE)
+#df = read.csv("C:/Users/user/Desktop/ch4_data.csv",header = TRUE)
+
+df
+
+model = lm(Minutes ~ Units, data=df)
+summary(model)
+plot(formula=Minutes ~ Units, data=df)
+```  
+  
+  minutes = 37.2127 + 9.9695*Units  
+  
+  
+    
+#### b) Check each of the standard regression assumptions and indicate which assumption(s) seems to be violated.  
+    
+```{r}
+model.diag.metrics = augment(model)
+head(model.diag.metrics)
+par(mfrow = c(2,2))
+plot(model)
+```
+   
+    1) Linearlity  
+      
+      
+```{r}
+plot(model,1)
+plot(formula=Minutes ~ Units, data=df)
+```  
+  
+  residual plot will show some pattern but -> look like non-linear relationship in the data
+  units, minutes plot -> look like linear relationship in the data  
+      
+      
+  2) Homogeneity of variance
+```{r}
+plot(model,3)
+```  
+  
+  균등하게 퍼져있지 않음 -> non-constant variances in the residuals error(heteroscedasticity)
+    
+   3) Normality of residuals  
+```{r}
+plot(model,2)
+```  
+  
+  대부분의 점들이 직전 근처에 있으므로 normality 가정할 수 있음
+
+## CH4 Regression Diagnostics-2        
+        
+    2) Consider the data in Table 4.8, which consist of a response variable Y and six predictor variables. Consider fitting a linear model relating Y to all six X-variables.  
+```{r}
+df = read.table("C:/Users/user/Desktop/ch4_data.txt",header = TRUE)
+df
+
+full_model = lm(Y~.,data = df)
+summary
+
+```  
+  
+#### a) What least squares assumptions (if any) seem to be violated?
+```{r}
+model.diag.metrics = augment(full_model)
+head(model.diag.metrics)
+par(mfrow = c(2,2))
+plot(full_model)
+```  
+    
+    1) Linearlity : 빨간색 선이 수평에 가깝고 특정한 패턴을 보이지 않으므로 가정할 수 있다.(plot(model,1))  
+    2) Homogeneity of variance : 잔차들이 고루 분산되어 있지 않음 non-constant variances in the residuals error(heteroscedasticity) (plot(model,3))   
+    3) Normality of residuals : 대부분의 점들이 직전 근처에 있으므로 normality 가정할 수 있음(model,2)
+    
+    
+  
+#### b) Compute r_i, C_i, DEITS_i
+```{r}
+rs = rstandard(full_model)
+cd = cooks.distance(model = full_model)
+DFITS = dffits(model=full_model)
+
+result = cbind(rs,cd,DFITS)
+
+plot(rs,main="RS");plot(cd,main="CD");plot(DFITS,main="DFITS")
+  
+```
+    
+#### c) Construct the index plots of ri,Ci,DFITSi
+#### d) Identify all unusual observations in the data and classify each according to type (i.e., outliers, leverage points, etc.) 
+```{r}
+#1) plot of ri
+ols_plot_resid_stand(full_model)
+# 34 & 38
+
+#2) plot of ci
+ols_plot_cooksd_chart(full_model)
+
+# 34 & 38
+
+
+#3) plot of DFITSi
+ols_plot_dffits(full_model)
+# 34 & 38
+
+#leverage
+
+#cutof = 2*(dim(*)[2]+1)/dim(*)[1]
+#-> cutof보다 다 작은 값.)
+```
+  
+
+
+
+### Suppose that we fit a linear model relating Y to the first three X-variables.Justify your answer to each of the following questions with the appropriate added-variable plot:
+```{r}
+reduce_model = lm(Y~X1+X2+X3,data = df)
+summary(reduce_model)
+library(car)
+avPlots(reduce_model)
+```
+
+#### (e) Should we add X4 to the above model? If yes, keep X4 in the model.  
+```{r}
+reduce_model = lm(Y~X1+X2+X3+X4,data = df)
+summary(reduce_model)
+avPlots(reduce_model)
+```
+        
+    X4를 추가해도 X1,X2,X3의 선형성이 무너지지 않고 X4역시 비슷한 선형선을 가지므로 추가한다.
+
+
+#### (f) Should we add X5 to the above model? If yes, keep X5 in the model.
+```{r}
+reduce_model = lm(Y~X1+X2+X3+X4+X5,data = df)
+summary(reduce_model)
+avPlots(reduce_model)
+```
+      
+    X5는 큰 선형성을 보이지 않으므로 추가하지 않는다.  
+    
+#### (g) Should we add X6 to the above model?  
+```{r}
+reduce_model = lm(Y~X1+X2+X3+X4+X6,data = df)
+summary(reduce_model)
+avPlots(reduce_model)
+```  
+  
+    X6는 큰 선형성을 보이지 않고 나머지 변수들의 선형정도를 낮추므로 추가하지 않는다.  
+  
+          
+#### (h) Which model(s) would you recommend as the best possible description of Y? Use the above results and/or perform additional analysis if needed.
+  
+    기존 3개 변수를 고려했을때 보다 X4변수를 추가한 모델이 전체 모델 설명력이 높아졌다.(adj_R2) 또한 Residual standard error가 조금 더 작아졌기에 X4까지 추가한 모델을 추천한다.
+          
+## CH5 Qualitative variables
+    
+    1. The price of a car is thought to depend on the horsepower of the engine and the country where the car is made. The variable Country has four categories: USA, Japan, Germany and Others. To include the variable Country in a regression equation, three indicator variables are created, one for USA, another for Japan, and the third for Germany. In addition, there are three interaction variables between the horsepower and each of the three Country categories(HP*USA, HP*Japan, HP*Germany). Some regression outputs when fitting three models to the data is how in Table 5.16. The usual regression assumptions hold.
+  
+#### a) Compute the correlation coefficient between the price and the horsepower.    
+```{r}
+df = read.csv("C:/Users/user/Desktop/ch5_Car.csv",header = TRUE)
+head(df)
+cor(df$Price,df$Horsepower)
+```
+#### b) What is the least squares estimated price of an American car with a 100 horsepower engine?
+        
+    <Model2> price = -4.117 + 0.174*(Horsepower) -3.162*(USA)-3.818*(Japan)+0.311*(Germany)
+    result = -4.117 +0.174*100 -3.162*(1) = 10.121
+    
+#### c) Holding the horsepower fixed, which country has the least expensive car? Why?
+  
+    <Model2>
+    1) coefficient for USA indicates that cars from the USA, on average, are predicted to sell for $3,162 less than cars from others, holding HP constant
+    2) coefficient for Japan indicates that cars from Japan, on average, are predicted to sell for $3,818 less than cars from others, holding HP constant
+    3) coefficient for Germany indicates that cars from Germany, on average, are predicted to sell for $311 MORE 
+    Answer: Japan
+
+#### d) Test whether there is an interaction between Country and horsepower. Specify the null and alternative hypotheses, test statistics, and conclusions.
+
+    Let Full model : Model 3(interaction O), Reduced model : Model 2(interaction X)
+    
+    null hypothese(H0) : The interaction terms are Not significant.
+    alternative hypothese(HA) : At least one of the interaction terms are significant.
+    
+    F-statistic = {(SSE(RM)-SSE(FM))/(7-5+1)}/(MSE(FM)) = ((1390.31-1319.85)/3)/16.0957 = 1.4592
+    ~ F(3,82)
+    
+    1.4592 < F(0.95,3,82) = 2.xxx => H0 not reject
+    ie) There is insufficient evidence to indicate an interaction betweeen County and horsepower.
+    
+    so, model 2 is clearly better than model 3
+    
+#### e) Given the horsepower of the car, test whether the Country is an important predictor of the price of a car. Specify the null and alternative hypotheses, test statistics, and conclusions.   
+
+    Let Full model : Model 2(+dummy variables), Reduced model : Model 1
+    
+    null hypothese(H0) : The dummy variables for Country are Not significant.
+    alternative hypothese(HA) : At least one of the dummy varibles for Country are significant.
+    
+    F-statistic = {(SSE(RM)-SSE(FM))/(4-2+1)}/(MSE(FM)) = ((1604.44-1390.31)/3)/16.3566 = 4.3638
+    ~ F(3,85)
+    
+    4.3638 > F(0.95,3,85) = 2.xxx => H0 reject
+    ie) There is sufficient evidence to indicate the Country is an important predictor of the price of a car
+    
+    so, model 2 is better than model 1
+    
+    
+#### f) Would you recommend that the number of categories of Country be reduced? If so, which categories can be joined together to form one category? 
+
+    <model 2>
+    
+    p-value : country
+    
+    0.0216 : USA
+    0.0061 : Japan
+    0.8682 : Germany
+    
+    -> Germany is not significantly since 0.8682 > 0.05 = alpha and coefficient > 0 , we shold join Germany and Others
+    
+    because USA, Japan p-value <0.05 and their coeffiecient < 0
+    
+#### g) Holding the horsepower fixed, write down the formular for the test statistics for testinf the equality of the price of American and Japanese cars?
+    
+    After combining Germany with Other
+    ->t = coefficient for USA/S.E.(USA)
+```{r}
+for(i in 1:90){
+  if(df$Country[i] == 'Germany'){
+    df$Country[i] = 'Other'
+  }
+}
+df$Country
+```
