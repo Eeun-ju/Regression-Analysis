@@ -5,7 +5,7 @@
 3주차 1 ~ 3 : Ch 1. Introduction<br>
 6주차 1 ~ 3 : Ch 2. Simple Linear Regression<br>
 8주차 1 : Ch 4. Regression Diagnostics: Detection of Model Violations<br>
-8주차 2 : Ch 5. Qualitative Variables as Predictors
-10주차 : Ch 6. Transformation of Variables ~ Ch 8. The Problem of Correlated Errors
-12주차 : Ch 9. Analysis of collinear Data ~ Ch 10. Working With Collinear Data
+8주차 2 : Ch 5. Qualitative Variables as Predictors<br>
+10주차 : Ch 6. Transformation of Variables ~ Ch 8. The Problem of Correlated Errors<br>
+12주차 : Ch 9. Analysis of collinear Data ~ Ch 10. Working With Collinear Data<br>
 14주차 : Ch 11. Variable Selection Procedures ~ Ch 12.Logistic Regression
